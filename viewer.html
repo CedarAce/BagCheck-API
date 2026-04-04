@@ -39,37 +39,20 @@
       background: var(--panel);
       border-bottom: 1px solid var(--border);
       flex-shrink: 0;
-      flex-wrap: wrap;
     }
     .topbar-title { font-weight: 700; font-size: 1rem; white-space: nowrap; }
     .topbar-title span { color: var(--accent); }
+    .topbar-hint { font-size: 0.78rem; color: var(--muted); margin-left: auto; }
 
-    .file-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 12px;
-      border: 1.5px dashed var(--border);
-      border-radius: 7px;
-      cursor: pointer;
-      font-size: 0.8rem;
-      color: var(--muted);
-      background: var(--bg);
-      transition: border-color .15s, color .15s, background .15s;
-      white-space: nowrap;
+    .status-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #ccc; flex-shrink: 0;
     }
-    .file-btn:hover { border-color: var(--accent); color: var(--accent); background: #eef2ff; }
-    .file-btn.loaded { border-color: #22c55e; color: #15803d; background: #f0fdf4; border-style: solid; }
-    .file-btn input { display: none; }
-
-    .topbar-hint { font-size: 0.75rem; color: var(--muted); margin-left: auto; }
+    .status-dot.ok   { background: #22c55e; }
+    .status-dot.warn { background: #f59e0b; }
 
     /* ── Layout ───────────────────────────────────────── */
-    .layout {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-    }
+    .layout { display: flex; flex: 1; overflow: hidden; }
 
     /* ── Sidebar ──────────────────────────────────────── */
     .sidebar {
@@ -81,231 +64,142 @@
       flex-direction: column;
       overflow: hidden;
     }
-
-    .sidebar-search {
-      padding: 10px 12px;
-      border-bottom: 1px solid var(--border);
-    }
+    .sidebar-search { padding: 10px 12px; border-bottom: 1px solid var(--border); }
     .sidebar-search input {
-      width: 100%;
-      padding: 6px 10px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      font-size: 0.82rem;
-      outline: none;
+      width: 100%; padding: 6px 10px;
+      border: 1px solid var(--border); border-radius: 6px;
+      font-size: 0.82rem; outline: none;
     }
     .sidebar-search input:focus { border-color: var(--accent); }
 
-    .airline-list {
-      overflow-y: auto;
-      flex: 1;
-    }
-
+    .airline-list { overflow-y: auto; flex: 1; }
     .airline-item {
-      padding: 9px 14px;
-      cursor: pointer;
+      padding: 9px 14px; cursor: pointer;
       border-left: 3px solid transparent;
       transition: background .1s;
-      display: flex;
-      flex-direction: column;
-      gap: 1px;
+      display: flex; flex-direction: column; gap: 1px;
     }
-    .airline-item:hover { background: #f5f7ff; }
-    .airline-item.active {
-      background: #eef2ff;
-      border-left-color: var(--accent);
-    }
+    .airline-item:hover  { background: #f5f7ff; }
+    .airline-item.active { background: #eef2ff; border-left-color: var(--accent); }
     .airline-item .al-name { font-size: 0.85rem; font-weight: 600; }
     .airline-item .al-meta { font-size: 0.72rem; color: var(--muted); }
-    .airline-item .al-scraped {
-      font-size: 0.68rem;
-      margin-top: 2px;
-    }
+    .airline-item .al-scraped { font-size: 0.68rem; margin-top: 2px; }
 
-    .empty-sidebar {
-      padding: 32px 16px;
-      text-align: center;
-      color: var(--muted);
-      font-size: 0.85rem;
-      line-height: 1.6;
-    }
+    .empty-sidebar { padding: 32px 16px; text-align: center; color: var(--muted); font-size: 0.85rem; line-height: 1.6; }
 
     /* ── Detail panel ─────────────────────────────────── */
-    .detail {
-      flex: 1;
-      overflow-y: auto;
-      padding: 20px 24px;
-    }
+    .detail { flex: 1; overflow-y: auto; padding: 20px 24px; }
 
     .placeholder {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      color: var(--muted);
-      text-align: center;
-      gap: 10px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      height: 100%; color: var(--muted); text-align: center; gap: 10px;
     }
     .placeholder .icon { font-size: 3rem; }
     .placeholder p { font-size: 0.9rem; max-width: 300px; line-height: 1.6; }
 
-    /* airline header */
     .detail-header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-      gap: 10px;
+      display: flex; align-items: flex-start;
+      justify-content: space-between; margin-bottom: 20px;
+      flex-wrap: wrap; gap: 10px;
     }
     .detail-header h2 { font-size: 1.3rem; font-weight: 700; }
     .detail-header .meta { font-size: 0.8rem; color: var(--muted); margin-top: 3px; }
-    .detail-header a {
-      font-size: 0.78rem;
-      color: var(--accent);
-      text-decoration: none;
-      word-break: break-all;
-    }
+    .detail-header a { font-size: 0.78rem; color: var(--accent); text-decoration: none; word-break: break-all; }
     .detail-header a:hover { text-decoration: underline; }
 
-    /* bag sections */
-    .bag-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 14px;
-      margin-bottom: 20px;
+    /* Run button */
+    .run-btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 8px 18px; border-radius: 8px;
+      background: var(--accent); color: #fff;
+      border: none; font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; white-space: nowrap;
+      transition: background .15s, opacity .15s;
     }
-    @media (max-width: 780px) { .bag-grid { grid-template-columns: 1fr; } }
+    .run-btn:hover:not(:disabled) { background: #3a6ce0; }
+    .run-btn:disabled { opacity: .55; cursor: not-allowed; }
+    .run-btn.running { background: #f59e0b; }
 
-    .bag-card {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 14px 16px;
-    }
-    .bag-card h3 {
-      font-size: 0.78rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .06em;
-      color: var(--muted);
-      margin-bottom: 10px;
-    }
+    /* Bag cards */
+    .bag-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+    .bag-card { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+    .bag-card h3 { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 10px; }
     .bag-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
     .bag-label { font-size: 0.75rem; color: var(--muted); }
     .bag-val { font-size: 0.82rem; font-weight: 500; font-family: monospace; }
     .bag-val.empty { color: #ccc; font-style: italic; font-family: inherit; font-weight: 400; }
+    .fee-row { font-size: 0.78rem; color: var(--muted); margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--border); }
 
-    /* scraper result overlay */
-    .scraper-section {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 16px;
-      margin-bottom: 16px;
-    }
-    .scraper-section h3 {
-      font-size: 0.85rem;
-      font-weight: 700;
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .conf-badge {
-      display: inline-block;
-      padding: 2px 9px;
-      border-radius: 99px;
-      font-size: 0.72rem;
-      font-weight: 700;
-    }
+    /* Confidence badges */
+    .conf-badge { display: inline-block; padding: 2px 9px; border-radius: 99px; font-size: 0.72rem; font-weight: 700; }
     .conf-high   { background: var(--high-bg); color: var(--high); }
     .conf-medium { background: var(--med-bg);  color: var(--med);  }
     .conf-low    { background: var(--low-bg);  color: var(--low);  }
     .conf-none   { background: #f0f0f0; color: #999; }
 
-    .scraper-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-    @media (max-width: 780px) { .scraper-grid { grid-template-columns: 1fr; } }
-
+    /* Scraper output */
+    .scraper-section { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+    .scraper-section h3 { font-size: 0.85rem; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .scraper-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px; }
     .scraper-cell { background: var(--bg); border-radius: 7px; padding: 10px 12px; }
     .scraper-cell .sc-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin-bottom: 4px; }
     .scraper-cell .sc-val { font-size: 0.82rem; font-family: monospace; }
     .scraper-cell .sc-val.empty { color: #ccc; font-style: italic; font-family: inherit; }
+    .notes-box { background: #fffbeb; border: 1px solid #fde68a; border-radius: 7px; padding: 8px 12px; font-size: 0.78rem; color: #7a5500; line-height: 1.5; }
+    .no-result { background: var(--bg); border-radius: 7px; padding: 14px; font-size: 0.83rem; color: var(--muted); text-align: center; }
 
-    .notes-box {
-      background: #fffbeb;
-      border: 1px solid #fde68a;
-      border-radius: 7px;
-      padding: 8px 12px;
-      font-size: 0.78rem;
-      color: #7a5500;
-      line-height: 1.5;
+    /* Log terminal */
+    .log-box {
+      background: #0f172a; color: #94a3b8;
+      border-radius: 8px; padding: 12px 14px;
+      font-family: monospace; font-size: 0.78rem;
+      line-height: 1.6; max-height: 200px;
+      overflow-y: auto; margin-top: 12px;
+      white-space: pre-wrap; word-break: break-all;
     }
-
-    .no-result {
-      background: var(--bg);
-      border-radius: 7px;
-      padding: 14px;
-      font-size: 0.83rem;
-      color: var(--muted);
-      text-align: center;
-    }
+    .log-box .log-ok   { color: #4ade80; }
+    .log-box .log-err  { color: #f87171; }
+    .log-box .log-info { color: #94a3b8; }
 
     .divider { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
 
-    .fee-row { font-size: 0.78rem; color: var(--muted); margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--border); }
-    .fee-val { color: var(--text); }
+    /* spinner */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { display: inline-block; width: 13px; height: 13px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; }
   </style>
 </head>
 <body>
 
-<!-- Top bar -->
 <div class="topbar">
   <span class="topbar-title">✈ Bag<span>Check</span></span>
-
-  <label class="file-btn" id="airlines-btn">
-    <input type="file" id="airlines-file" accept=".csv" />
-    📂 <span id="airlines-label">Load airlines.csv</span>
-  </label>
-
-  <label class="file-btn" id="results-btn">
-    <input type="file" id="results-file" accept=".csv" />
-    📊 <span id="results-label">Load results.csv (optional)</span>
-  </label>
-
-  <span class="topbar-hint">Select an airline from the sidebar to view its baggage policy</span>
+  <span id="airlines-status" style="display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--muted)">
+    <span class="status-dot" id="airlines-dot"></span>
+    <span id="airlines-lbl">loading airlines…</span>
+  </span>
+  <span id="results-status" style="display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--muted)">
+    <span class="status-dot" id="results-dot"></span>
+    <span id="results-lbl">no results yet</span>
+  </span>
+  <span class="topbar-hint">Select an airline → click Run to scrape it</span>
 </div>
 
-<!-- Main layout -->
 <div class="layout">
-
-  <!-- Sidebar -->
   <div class="sidebar">
     <div class="sidebar-search">
       <input type="text" id="search-input" placeholder="Search airlines…" />
     </div>
     <div class="airline-list" id="airline-list">
-      <div class="empty-sidebar">
-        Load <strong>airlines.csv</strong> above to see the airline list
-      </div>
+      <div class="empty-sidebar">Loading…</div>
     </div>
   </div>
 
-  <!-- Detail -->
   <div class="detail" id="detail">
     <div class="placeholder">
       <div class="icon">🧳</div>
-      <p>Load <strong>airlines.csv</strong> then click an airline to see its baggage policy details.</p>
+      <p>Select an airline from the sidebar to view its policy and run the scraper.</p>
     </div>
   </div>
-
 </div>
 
 <script>
@@ -329,87 +223,163 @@
     }
     if (rows.length < 2) return [];
     const headers = rows[0].map(h => h.trim());
-    return rows.slice(1).map(r =>
-      Object.fromEntries(headers.map((h, i) => [h, (r[i] ?? '').trim()]))
-    );
+    return rows.slice(1).map(r => Object.fromEntries(headers.map((h,i) => [h,(r[i]??'').trim()])));
   }
 
   // ── State ──────────────────────────────────────────────────────────────────
-  let airlines = [];    // rows from airlines.csv
-  let resultsMap = {};  // id → row from results.csv
+  let airlines = [];
+  let resultsMap = {};
   let selectedId = null;
+  let running = false;
 
-  // ── Helpers ────────────────────────────────────────────────────────────────
-  function val(v, fallback = '—') {
-    return (v && v.trim()) ? v.trim() : fallback;
+  // ── Fetch CSVs from server ─────────────────────────────────────────────────
+  async function fetchCSV(path) {
+    const res = await fetch(path);
+    if (!res.ok) return null;
+    return parseCSV(await res.text());
   }
-  function confClass(c) {
-    return { high: 'conf-high', medium: 'conf-medium', low: 'conf-low' }[c] || 'conf-none';
+
+  async function reloadResults() {
+    const rows = await fetchCSV('/results.csv');
+    if (rows && rows.length) {
+      resultsMap = Object.fromEntries(rows.map(r => [r.id, r]));
+      document.getElementById('results-dot').className = 'status-dot ok';
+      document.getElementById('results-lbl').textContent = `results.csv (${rows.length})`;
+    } else {
+      resultsMap = {};
+      document.getElementById('results-dot').className = 'status-dot warn';
+      document.getElementById('results-lbl').textContent = 'no results yet';
+    }
+  }
+
+  async function init() {
+    const rows = await fetchCSV('/airlines.csv');
+    if (rows && rows.length) {
+      airlines = rows;
+      document.getElementById('airlines-dot').className = 'status-dot ok';
+      document.getElementById('airlines-lbl').textContent = `airlines.csv (${rows.length})`;
+      await reloadResults();
+      renderSidebar();
+    } else {
+      document.getElementById('airlines-dot').className = 'status-dot warn';
+      document.getElementById('airlines-lbl').textContent = 'airlines.csv not found — run server.py';
+      document.getElementById('airline-list').innerHTML =
+        '<div class="empty-sidebar">Start <strong>server.py</strong> and reload this page.</div>';
+    }
   }
 
   // ── Sidebar ────────────────────────────────────────────────────────────────
+  function confClass(c) {
+    return {high:'conf-high',medium:'conf-medium',low:'conf-low'}[c] || 'conf-none';
+  }
+
   function renderSidebar(filter = '') {
     const list = document.getElementById('airline-list');
     const q = filter.toLowerCase();
     const visible = airlines.filter(a =>
       !q || (a.name||'').toLowerCase().includes(q) || (a.iata||'').toLowerCase().includes(q)
     );
-
     if (!visible.length) {
-      list.innerHTML = '<div class="empty-sidebar">No airlines match your search.</div>';
+      list.innerHTML = '<div class="empty-sidebar">No airlines match.</div>';
       return;
     }
-
     list.innerHTML = '';
     for (const a of visible) {
       const res = resultsMap[a.id];
       const div = document.createElement('div');
       div.className = 'airline-item' + (a.id === selectedId ? ' active' : '');
       div.dataset.id = a.id;
-
-      let scrapedLine = '';
-      if (res) {
-        const badge = `<span class="conf-badge ${confClass(res.confidence)}">${res.confidence}</span>`;
-        scrapedLine = `<span class="al-scraped">${badge} scraped</span>`;
-      }
-
+      const badge = res
+        ? `<span class="al-scraped"><span class="conf-badge ${confClass(res.confidence)}">${res.confidence}</span> scraped</span>`
+        : '';
       div.innerHTML = `
         <span class="al-name">${a.name}</span>
-        <span class="al-meta">${val(a.iata, '')}${a.iata && a.region ? ' · ' : ''}${val(a.region, '')}</span>
-        ${scrapedLine}
-      `;
+        <span class="al-meta">${a.iata||''}${a.iata&&a.region?' · ':''}${a.region||''}</span>
+        ${badge}`;
       div.addEventListener('click', () => selectAirline(a.id));
       list.appendChild(div);
     }
   }
 
   // ── Detail ─────────────────────────────────────────────────────────────────
+  function val(v) { return (v && v.trim()) ? v.trim() : null; }
+
+  function bagCard(title, a, prefix) {
+    const feeKey = prefix === 'cb' ? 'cb_fee_usd' : `${prefix}_fee`;
+    const fields = [
+      ['Dimensions (cm)', a[`${prefix}_dimensions_cm`]],
+      ['Dimensions (in)', a[`${prefix}_dimensions_in`]],
+      ['Weight (kg)',     a[`${prefix}_weight_kg`]],
+      ['Weight (lbs)',    a[`${prefix}_weight_lbs`]],
+    ];
+    const fee   = val(a[feeKey]);
+    const notes = val(a[`${prefix}_notes`]);
+    return `<div class="bag-card">
+      <h3>${title}</h3>
+      ${fields.map(([l,v]) => {
+        const empty = !val(v);
+        return `<div class="bag-row">
+          <span class="bag-label">${l}</span>
+          <span class="bag-val${empty?' empty':''}">${val(v)||'—'}</span>
+        </div>`;
+      }).join('')}
+      ${fee   ? `<div class="fee-row">Fee: <strong>${fee}</strong></div>` : ''}
+      ${notes ? `<div class="fee-row"><em>${notes}</em></div>` : ''}
+    </div>`;
+  }
+
+  function scraperResult(res) {
+    let scrapedAt = '';
+    if (res.last_scraped) {
+      try { scrapedAt = new Date(res.last_scraped).toLocaleString(); } catch {}
+    }
+    function cell(label, v) {
+      const empty = !val(v);
+      return `<div class="scraper-cell">
+        <div class="sc-label">${label}</div>
+        <div class="sc-val${empty?' empty':''}">${val(v)||'—'}</div>
+      </div>`;
+    }
+    return `<div class="scraper-section" id="scraper-result">
+      <h3>
+        Scraper result
+        <span class="conf-badge ${confClass(res.confidence)}">${res.confidence||'?'} confidence</span>
+        ${scrapedAt ? `<span style="font-size:.72rem;color:var(--muted);font-weight:400">scraped ${scrapedAt}</span>` : ''}
+      </h3>
+      <div class="scraper-grid">
+        ${cell('Personal Item (cm)', res.pi_dimensions_cm)}
+        ${cell('Carry-on (cm)',      res.co_dimensions_cm)}
+        ${cell('Checked Bag (cm)',   res.cb_dimensions_cm)}
+        ${cell('PI weight (kg)',     res.pi_weight_kg)}
+        ${cell('CO weight (kg)',     res.co_weight_kg)}
+        ${cell('CB weight (kg)',     res.cb_weight_kg)}
+      </div>
+      ${res.notes ? `<div class="notes-box">⚠ ${res.notes}</div>` : ''}
+    </div>`;
+  }
+
   function selectAirline(id) {
     selectedId = id;
     renderSidebar(document.getElementById('search-input').value);
-
     const a = airlines.find(r => r.id === id);
     if (!a) return;
+
     const res = resultsMap[id] || null;
-
     const detail = document.getElementById('detail');
-
-    const scrapedAt = res?.last_scraped
-      ? (() => { try { return new Date(res.last_scraped).toLocaleString(); } catch { return res.last_scraped; } })()
-      : null;
 
     detail.innerHTML = `
       <div class="detail-header">
         <div>
           <h2>${a.name}${a.iata ? ` <small style="color:var(--muted);font-size:.8rem">(${a.iata})</small>` : ''}</h2>
-          <div class="meta">${val(a.region, '')}</div>
+          <div class="meta">${a.region||''}</div>
           ${a.policy_url ? `<a href="${a.policy_url}" target="_blank" rel="noopener">↗ ${a.policy_url}</a>` : ''}
         </div>
-        ${a.last_updated ? `<span style="font-size:.75rem;color:var(--muted)">CSV updated: ${a.last_updated}</span>` : ''}
+        <button class="run-btn" id="run-btn" onclick="runScraper('${id}')">
+          ▶ Run Scraper
+        </button>
       </div>
 
       <p style="font-size:.78rem;color:var(--muted);margin-bottom:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em">Source data (airlines.csv)</p>
-
       <div class="bag-grid">
         ${bagCard('Personal Item', a, 'pi')}
         ${bagCard('Carry-on', a, 'co')}
@@ -418,107 +388,81 @@
 
       <hr class="divider" />
 
-      <p style="font-size:.78rem;color:var(--muted);margin-bottom:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em">Scraper output (results.csv)</p>
-
-      ${res ? scraperSection(res, scrapedAt) : noResult()}
+      <p style="font-size:.78rem;color:var(--muted);margin-bottom:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em">Scraper output</p>
+      <div id="scraper-area">
+        ${res ? scraperResult(res) : `<div class="no-result">No result yet — click <strong>Run Scraper</strong> above.</div>`}
+      </div>
     `;
   }
 
-  function bagCard(title, a, prefix) {
-    const dim_cm = val(a[`${prefix}_dimensions_cm`]);
-    const dim_in = val(a[`${prefix}_dimensions_in`]);
-    const kg     = val(a[`${prefix}_weight_kg`]);
-    const lbs    = val(a[`${prefix}_weight_lbs`]);
-    const fee    = val(a[`${prefix}_fee${prefix==='cb'?'_usd':''}`]);
-    const notes  = val(a[`${prefix}_notes`]);
+  // ── Run scraper via SSE ────────────────────────────────────────────────────
+  function runScraper(id) {
+    if (running) return;
+    running = true;
 
-    function row(label, v) {
-      const isEmpty = v === '—';
-      return `<div class="bag-row">
-        <span class="bag-label">${label}</span>
-        <span class="bag-val${isEmpty?' empty':''}">${v}</span>
-      </div>`;
-    }
+    const btn = document.getElementById('run-btn');
+    btn.disabled = true;
+    btn.classList.add('running');
+    btn.innerHTML = `<span class="spinner"></span> Running…`;
 
-    return `<div class="bag-card">
-      <h3>${title}</h3>
-      ${row('Dimensions (cm)', dim_cm)}
-      ${row('Dimensions (in)', dim_in)}
-      ${row('Weight (kg)', kg)}
-      ${row('Weight (lbs)', lbs)}
-      ${fee !== '—' ? `<div class="fee-row">Fee: <span class="fee-val">${fee}</span></div>` : ''}
-      ${notes !== '—' ? `<div class="fee-row" style="color:var(--muted)"><em>${notes}</em></div>` : ''}
-    </div>`;
+    const area = document.getElementById('scraper-area');
+    area.innerHTML = `<div class="no-result">Scraping — please wait…</div><div class="log-box" id="log-box"></div>`;
+    const logBox = document.getElementById('log-box');
+
+    const es = new EventSource(`/run/${encodeURIComponent(id)}`);
+
+    es.onmessage = async (e) => {
+      const line = e.data;
+
+      if (line === '__DONE__') {
+        es.close();
+        running = false;
+        // Reload results.csv and re-render
+        await reloadResults();
+        renderSidebar(document.getElementById('search-input').value);
+        const res = resultsMap[id];
+        const resultHtml = res ? scraperResult(res) : `<div class="no-result">Scrape finished but no result found in results.csv.</div>`;
+        area.innerHTML = resultHtml + `<div class="log-box" id="log-box-done">${logBox.innerHTML}<span class="log-ok">✓ Done</span></div>`;
+        btn.disabled = false;
+        btn.classList.remove('running');
+        btn.innerHTML = '▶ Run Again';
+        return;
+      }
+
+      if (line.startsWith('__ERROR__')) {
+        es.close();
+        running = false;
+        const msg = line.replace('__ERROR__ ', '');
+        logBox.innerHTML += `<span class="log-err">✗ ${msg}</span>\n`;
+        logBox.scrollTop = logBox.scrollHeight;
+        area.innerHTML = `<div class="no-result" style="color:var(--low)">Scrape failed: ${msg}</div>` + area.innerHTML;
+        btn.disabled = false;
+        btn.classList.remove('running');
+        btn.innerHTML = '▶ Retry';
+        return;
+      }
+
+      logBox.innerHTML += `<span class="log-info">${line}</span>\n`;
+      logBox.scrollTop = logBox.scrollHeight;
+    };
+
+    es.onerror = () => {
+      es.close();
+      running = false;
+      logBox.innerHTML += `<span class="log-err">Connection lost.</span>\n`;
+      btn.disabled = false;
+      btn.classList.remove('running');
+      btn.innerHTML = '▶ Retry';
+    };
   }
 
-  function scraperSection(res, scrapedAt) {
-    function cell(label, v) {
-      const empty = !v || !v.trim();
-      return `<div class="scraper-cell">
-        <div class="sc-label">${label}</div>
-        <div class="sc-val${empty?' empty':''}">${empty ? '—' : v}</div>
-      </div>`;
-    }
-    return `<div class="scraper-section">
-      <h3>
-        Extracted result
-        <span class="conf-badge ${confClass(res.confidence)}">${res.confidence || '?'} confidence</span>
-        ${scrapedAt ? `<span style="font-size:.72rem;color:var(--muted);font-weight:400">scraped ${scrapedAt}</span>` : ''}
-      </h3>
-      <div class="scraper-grid">
-        ${cell('Personal Item (cm)', res.pi_dimensions_cm)}
-        ${cell('Carry-on (cm)', res.co_dimensions_cm)}
-        ${cell('Checked Bag (cm)', res.cb_dimensions_cm)}
-        ${cell('PI weight (kg)', res.pi_weight_kg)}
-        ${cell('CO weight (kg)', res.co_weight_kg)}
-        ${cell('CB weight (kg)', res.cb_weight_kg)}
-      </div>
-      ${res.notes ? `<div class="notes-box">⚠ ${res.notes}</div>` : ''}
-    </div>`;
-  }
-
-  function noResult() {
-    const loaded = Object.keys(resultsMap).length > 0;
-    return `<div class="no-result">
-      ${loaded
-        ? 'No scraper result found for this airline in results.csv.'
-        : 'Load <strong>results.csv</strong> above to see the scraper\'s extracted output here.'}
-    </div>`;
-  }
-
-  // ── File loading ───────────────────────────────────────────────────────────
-  function loadFile(input, onRows) {
-    const file = input.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = e => onRows(parseCSV(e.target.result), file.name);
-    reader.readAsText(file);
-  }
-
-  document.getElementById('airlines-file').addEventListener('change', function () {
-    loadFile(this, (rows, name) => {
-      airlines = rows;
-      document.getElementById('airlines-label').textContent = `${name} (${rows.length})`;
-      document.getElementById('airlines-btn').classList.add('loaded');
-      selectedId = null;
-      document.getElementById('detail').innerHTML = `<div class="placeholder"><div class="icon">👈</div><p>Select an airline from the sidebar.</p></div>`;
-      renderSidebar();
-    });
-  });
-
-  document.getElementById('results-file').addEventListener('change', function () {
-    loadFile(this, (rows, name) => {
-      resultsMap = Object.fromEntries(rows.map(r => [r.id, r]));
-      document.getElementById('results-label').textContent = `${name} (${rows.length})`;
-      document.getElementById('results-btn').classList.add('loaded');
-      renderSidebar(document.getElementById('search-input').value);
-      if (selectedId) selectAirline(selectedId); // refresh detail
-    });
-  });
-
+  // ── Search ─────────────────────────────────────────────────────────────────
   document.getElementById('search-input').addEventListener('input', function () {
     renderSidebar(this.value);
   });
+
+  // ── Boot ───────────────────────────────────────────────────────────────────
+  init();
 </script>
 </body>
 </html>
