@@ -39,7 +39,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Model — override via MODEL env var, e.g. anthropic/claude-opus-4-5
-MODEL = os.getenv("MODEL", "anthropic/claude-sonnet-4-5")
+MODEL = os.getenv("MODEL", "anthropic/claude-sonnet-4-6")
 
 # ---------------------------------------------------------------------------
 # Prompts
