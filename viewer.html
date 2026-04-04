@@ -7,326 +7,518 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    :root {
+      --sidebar-w: 260px;
+      --bg: #f0f2f5;
+      --panel: #fff;
+      --border: #e4e8ef;
+      --accent: #4a7cf7;
+      --text: #1c1c2e;
+      --muted: #7a7a9a;
+      --high: #1a7f3c; --high-bg: #d1f0de;
+      --med:  #7a5500; --med-bg:  #fff0c2;
+      --low:  #b91c1c; --low-bg:  #fde8e8;
+    }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #f4f6f9;
-      color: #1a1a2e;
-      padding: 24px;
-    }
-
-    h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
-    .subtitle { color: #666; font-size: 0.9rem; margin-bottom: 28px; }
-
-    .panels {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-    }
-    @media (max-width: 900px) { .panels { grid-template-columns: 1fr; } }
-
-    .panel {
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 1px 4px rgba(0,0,0,.1);
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
       overflow: hidden;
     }
 
-    .panel-header {
+    /* ── Top bar ──────────────────────────────────────── */
+    .topbar {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      padding: 14px 18px;
-      border-bottom: 1px solid #eee;
-      background: #fafafa;
-    }
-    .panel-header h2 { font-size: 1rem; font-weight: 600; }
-    .badge {
-      font-size: 0.75rem;
-      background: #e8edf5;
-      color: #444;
-      padding: 2px 8px;
-      border-radius: 99px;
-    }
-
-    .drop-zone {
-      padding: 32px 18px;
-      text-align: center;
-      color: #888;
-      font-size: 0.9rem;
-      cursor: pointer;
-      border: 2px dashed #ddd;
-      margin: 16px;
-      border-radius: 8px;
-      transition: background .15s, border-color .15s;
-    }
-    .drop-zone:hover, .drop-zone.drag-over {
-      background: #f0f4ff;
-      border-color: #4a80f0;
-      color: #4a80f0;
-    }
-    .drop-zone input[type=file] { display: none; }
-    .drop-icon { font-size: 1.8rem; margin-bottom: 6px; }
-
-    .table-wrap { overflow-x: auto; }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.82rem;
-    }
-    th {
-      background: #f0f3f8;
-      text-align: left;
-      padding: 8px 12px;
-      font-weight: 600;
-      color: #555;
-      white-space: nowrap;
-      border-bottom: 2px solid #e0e6ef;
-    }
-    td {
-      padding: 7px 12px;
-      border-bottom: 1px solid #f0f0f0;
-      vertical-align: top;
-    }
-    tr:last-child td { border-bottom: none; }
-    tr:hover td { background: #f9fafb; }
-
-    .conf-high   { background: #d4edda; color: #1a5c2a; padding: 2px 8px; border-radius: 99px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
-    .conf-medium { background: #fff3cd; color: #6b4c00; padding: 2px 8px; border-radius: 99px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
-    .conf-low    { background: #f8d7da; color: #721c24; padding: 2px 8px; border-radius: 99px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
-
-    .dim   { color: #333; font-family: monospace; font-size: 0.8rem; }
-    .empty { color: #bbb; font-style: italic; }
-    .notes-cell { max-width: 200px; word-break: break-word; color: #555; }
-
-    .url-cell { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .url-cell a { color: #4a80f0; text-decoration: none; }
-    .url-cell a:hover { text-decoration: underline; }
-
-    .stats {
-      display: flex;
-      gap: 12px;
+      gap: 16px;
       padding: 10px 18px;
-      border-top: 1px solid #eee;
-      font-size: 0.8rem;
-      color: #666;
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
       flex-wrap: wrap;
     }
-    .stat-item { display: flex; align-items: center; gap: 5px; }
+    .topbar-title { font-weight: 700; font-size: 1rem; white-space: nowrap; }
+    .topbar-title span { color: var(--accent); }
+
+    .file-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border: 1.5px dashed var(--border);
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      color: var(--muted);
+      background: var(--bg);
+      transition: border-color .15s, color .15s, background .15s;
+      white-space: nowrap;
+    }
+    .file-btn:hover { border-color: var(--accent); color: var(--accent); background: #eef2ff; }
+    .file-btn.loaded { border-color: #22c55e; color: #15803d; background: #f0fdf4; border-style: solid; }
+    .file-btn input { display: none; }
+
+    .topbar-hint { font-size: 0.75rem; color: var(--muted); margin-left: auto; }
+
+    /* ── Layout ───────────────────────────────────────── */
+    .layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── Sidebar ──────────────────────────────────────── */
+    .sidebar {
+      width: var(--sidebar-w);
+      flex-shrink: 0;
+      background: var(--panel);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .sidebar-search {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sidebar-search input {
+      width: 100%;
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.82rem;
+      outline: none;
+    }
+    .sidebar-search input:focus { border-color: var(--accent); }
+
+    .airline-list {
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .airline-item {
+      padding: 9px 14px;
+      cursor: pointer;
+      border-left: 3px solid transparent;
+      transition: background .1s;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+    .airline-item:hover { background: #f5f7ff; }
+    .airline-item.active {
+      background: #eef2ff;
+      border-left-color: var(--accent);
+    }
+    .airline-item .al-name { font-size: 0.85rem; font-weight: 600; }
+    .airline-item .al-meta { font-size: 0.72rem; color: var(--muted); }
+    .airline-item .al-scraped {
+      font-size: 0.68rem;
+      margin-top: 2px;
+    }
+
+    .empty-sidebar {
+      padding: 32px 16px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+
+    /* ── Detail panel ─────────────────────────────────── */
+    .detail {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px;
+    }
+
+    .placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--muted);
+      text-align: center;
+      gap: 10px;
+    }
+    .placeholder .icon { font-size: 3rem; }
+    .placeholder p { font-size: 0.9rem; max-width: 300px; line-height: 1.6; }
+
+    /* airline header */
+    .detail-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .detail-header h2 { font-size: 1.3rem; font-weight: 700; }
+    .detail-header .meta { font-size: 0.8rem; color: var(--muted); margin-top: 3px; }
+    .detail-header a {
+      font-size: 0.78rem;
+      color: var(--accent);
+      text-decoration: none;
+      word-break: break-all;
+    }
+    .detail-header a:hover { text-decoration: underline; }
+
+    /* bag sections */
+    .bag-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    @media (max-width: 780px) { .bag-grid { grid-template-columns: 1fr; } }
+
+    .bag-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+    .bag-card h3 {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+    .bag-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
+    .bag-label { font-size: 0.75rem; color: var(--muted); }
+    .bag-val { font-size: 0.82rem; font-weight: 500; font-family: monospace; }
+    .bag-val.empty { color: #ccc; font-style: italic; font-family: inherit; font-weight: 400; }
+
+    /* scraper result overlay */
+    .scraper-section {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .scraper-section h3 {
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .conf-badge {
+      display: inline-block;
+      padding: 2px 9px;
+      border-radius: 99px;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+    .conf-high   { background: var(--high-bg); color: var(--high); }
+    .conf-medium { background: var(--med-bg);  color: var(--med);  }
+    .conf-low    { background: var(--low-bg);  color: var(--low);  }
+    .conf-none   { background: #f0f0f0; color: #999; }
+
+    .scraper-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    @media (max-width: 780px) { .scraper-grid { grid-template-columns: 1fr; } }
+
+    .scraper-cell { background: var(--bg); border-radius: 7px; padding: 10px 12px; }
+    .scraper-cell .sc-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin-bottom: 4px; }
+    .scraper-cell .sc-val { font-size: 0.82rem; font-family: monospace; }
+    .scraper-cell .sc-val.empty { color: #ccc; font-style: italic; font-family: inherit; }
+
+    .notes-box {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 7px;
+      padding: 8px 12px;
+      font-size: 0.78rem;
+      color: #7a5500;
+      line-height: 1.5;
+    }
+
+    .no-result {
+      background: var(--bg);
+      border-radius: 7px;
+      padding: 14px;
+      font-size: 0.83rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .divider { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
+
+    .fee-row { font-size: 0.78rem; color: var(--muted); margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--border); }
+    .fee-val { color: var(--text); }
   </style>
 </head>
 <body>
 
-<h1>✈ BagCheck Viewer</h1>
-<p class="subtitle">Drop your CSVs below to inspect the scraper's input and output side by side.</p>
+<!-- Top bar -->
+<div class="topbar">
+  <span class="topbar-title">✈ Bag<span>Check</span></span>
 
-<div class="panels">
+  <label class="file-btn" id="airlines-btn">
+    <input type="file" id="airlines-file" accept=".csv" />
+    📂 <span id="airlines-label">Load airlines.csv</span>
+  </label>
 
-  <!-- INPUT PANEL -->
-  <div class="panel" id="input-panel">
-    <div class="panel-header">
-      <h2>Input — airlines.csv</h2>
-      <span class="badge" id="input-badge">no file</span>
+  <label class="file-btn" id="results-btn">
+    <input type="file" id="results-file" accept=".csv" />
+    📊 <span id="results-label">Load results.csv (optional)</span>
+  </label>
+
+  <span class="topbar-hint">Select an airline from the sidebar to view its baggage policy</span>
+</div>
+
+<!-- Main layout -->
+<div class="layout">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-search">
+      <input type="text" id="search-input" placeholder="Search airlines…" />
     </div>
-    <div class="drop-zone" id="input-drop" onclick="document.getElementById('input-file').click()">
-      <input type="file" id="input-file" accept=".csv" />
-      <div class="drop-icon">📂</div>
-      Click or drop <strong>airlines.csv</strong> here
+    <div class="airline-list" id="airline-list">
+      <div class="empty-sidebar">
+        Load <strong>airlines.csv</strong> above to see the airline list
+      </div>
     </div>
-    <div class="table-wrap" id="input-table-wrap"></div>
   </div>
 
-  <!-- OUTPUT PANEL -->
-  <div class="panel" id="output-panel">
-    <div class="panel-header">
-      <h2>Output — results.csv</h2>
-      <span class="badge" id="output-badge">no file</span>
+  <!-- Detail -->
+  <div class="detail" id="detail">
+    <div class="placeholder">
+      <div class="icon">🧳</div>
+      <p>Load <strong>airlines.csv</strong> then click an airline to see its baggage policy details.</p>
     </div>
-    <div class="drop-zone" id="output-drop" onclick="document.getElementById('output-file').click()">
-      <input type="file" id="output-file" accept=".csv" />
-      <div class="drop-icon">📊</div>
-      Click or drop <strong>results.csv</strong> here
-    </div>
-    <div class="table-wrap" id="output-table-wrap"></div>
-    <div id="output-stats" class="stats" style="display:none"></div>
   </div>
 
 </div>
 
 <script>
-  // ── CSV parser (handles quoted fields) ─────────────────────────────────────
+  // ── CSV parser ─────────────────────────────────────────────────────────────
   function parseCSV(text) {
+    const lines = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n');
     const rows = [];
-    const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
     for (const line of lines) {
       if (!line.trim()) continue;
-      const row = [];
-      let cur = '', inQ = false;
+      const row = []; let cur = '', inQ = false;
       for (let i = 0; i < line.length; i++) {
         const ch = line[i];
         if (ch === '"') {
           if (inQ && line[i+1] === '"') { cur += '"'; i++; }
           else inQ = !inQ;
-        } else if (ch === ',' && !inQ) {
-          row.push(cur); cur = '';
-        } else {
-          cur += ch;
-        }
+        } else if (ch === ',' && !inQ) { row.push(cur); cur = ''; }
+        else cur += ch;
       }
       row.push(cur);
       rows.push(row);
     }
     if (rows.length < 2) return [];
-    const headers = rows[0];
-    return rows.slice(1).map(r => Object.fromEntries(headers.map((h, i) => [h.trim(), (r[i] ?? '').trim()])));
+    const headers = rows[0].map(h => h.trim());
+    return rows.slice(1).map(r =>
+      Object.fromEntries(headers.map((h, i) => [h, (r[i] ?? '').trim()]))
+    );
   }
 
-  // ── Cell helpers ────────────────────────────────────────────────────────────
-  function cell(text, cls) {
-    const td = document.createElement('td');
-    if (!text || text === '') {
-      td.innerHTML = '<span class="empty">—</span>';
-    } else if (cls) {
-      const span = document.createElement('span');
-      span.className = cls;
-      span.textContent = text;
-      td.appendChild(span);
-    } else {
-      td.textContent = text;
+  // ── State ──────────────────────────────────────────────────────────────────
+  let airlines = [];    // rows from airlines.csv
+  let resultsMap = {};  // id → row from results.csv
+  let selectedId = null;
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  function val(v, fallback = '—') {
+    return (v && v.trim()) ? v.trim() : fallback;
+  }
+  function confClass(c) {
+    return { high: 'conf-high', medium: 'conf-medium', low: 'conf-low' }[c] || 'conf-none';
+  }
+
+  // ── Sidebar ────────────────────────────────────────────────────────────────
+  function renderSidebar(filter = '') {
+    const list = document.getElementById('airline-list');
+    const q = filter.toLowerCase();
+    const visible = airlines.filter(a =>
+      !q || (a.name||'').toLowerCase().includes(q) || (a.iata||'').toLowerCase().includes(q)
+    );
+
+    if (!visible.length) {
+      list.innerHTML = '<div class="empty-sidebar">No airlines match your search.</div>';
+      return;
     }
-    return td;
-  }
 
-  function dimCell(text) {
-    const td = document.createElement('td');
-    td.innerHTML = text ? `<span class="dim">${text}</span>` : '<span class="empty">—</span>';
-    return td;
-  }
+    list.innerHTML = '';
+    for (const a of visible) {
+      const res = resultsMap[a.id];
+      const div = document.createElement('div');
+      div.className = 'airline-item' + (a.id === selectedId ? ' active' : '');
+      div.dataset.id = a.id;
 
-  function confBadge(val) {
-    const map = { high: 'conf-high', medium: 'conf-medium', low: 'conf-low' };
-    return map[val] || 'conf-low';
-  }
-
-  // ── Render input table ──────────────────────────────────────────────────────
-  function renderInput(rows, wrap, badge) {
-    badge.textContent = `${rows.length} airline${rows.length !== 1 ? 's' : ''}`;
-    const table = document.createElement('table');
-    table.innerHTML = `<thead><tr><th>#</th><th>ID</th><th>Name</th><th>Policy URL</th></tr></thead>`;
-    const tbody = document.createElement('tbody');
-    rows.forEach((r, i) => {
-      const tr = document.createElement('tr');
-      tr.appendChild(cell(String(i + 1)));
-      tr.appendChild(cell(r.id));
-      tr.appendChild(cell(r.name));
-      const td = document.createElement('td');
-      td.className = 'url-cell';
-      if (r.policy_url) {
-        td.innerHTML = `<a href="${r.policy_url}" target="_blank" rel="noopener">${r.policy_url}</a>`;
-      } else {
-        td.innerHTML = '<span class="empty">—</span>';
+      let scrapedLine = '';
+      if (res) {
+        const badge = `<span class="conf-badge ${confClass(res.confidence)}">${res.confidence}</span>`;
+        scrapedLine = `<span class="al-scraped">${badge} scraped</span>`;
       }
-      tr.appendChild(td);
-      tbody.appendChild(tr);
-    });
-    table.appendChild(tbody);
-    wrap.appendChild(table);
+
+      div.innerHTML = `
+        <span class="al-name">${a.name}</span>
+        <span class="al-meta">${val(a.iata, '')}${a.iata && a.region ? ' · ' : ''}${val(a.region, '')}</span>
+        ${scrapedLine}
+      `;
+      div.addEventListener('click', () => selectAirline(a.id));
+      list.appendChild(div);
+    }
   }
 
-  // ── Render output table ─────────────────────────────────────────────────────
-  function renderOutput(rows, wrap, badge, statsEl) {
-    badge.textContent = `${rows.length} result${rows.length !== 1 ? 's' : ''}`;
+  // ── Detail ─────────────────────────────────────────────────────────────────
+  function selectAirline(id) {
+    selectedId = id;
+    renderSidebar(document.getElementById('search-input').value);
 
-    const table = document.createElement('table');
-    table.innerHTML = `<thead><tr>
-      <th>Name</th>
-      <th>Personal Item</th><th>PI kg</th>
-      <th>Carry-on</th><th>CO kg</th>
-      <th>Checked</th><th>CB kg</th>
-      <th>Conf.</th><th>Notes</th><th>Scraped</th>
-    </tr></thead>`;
+    const a = airlines.find(r => r.id === id);
+    if (!a) return;
+    const res = resultsMap[id] || null;
 
-    const tbody = document.createElement('tbody');
-    rows.forEach(r => {
-      const tr = document.createElement('tr');
-      tr.appendChild(cell(r.name));
-      tr.appendChild(dimCell(r.pi_dimensions_cm));
-      tr.appendChild(cell(r.pi_weight_kg));
-      tr.appendChild(dimCell(r.co_dimensions_cm));
-      tr.appendChild(cell(r.co_weight_kg));
-      tr.appendChild(dimCell(r.cb_dimensions_cm));
-      tr.appendChild(cell(r.cb_weight_kg));
+    const detail = document.getElementById('detail');
 
-      const confTd = document.createElement('td');
-      confTd.innerHTML = r.confidence
-        ? `<span class="${confBadge(r.confidence)}">${r.confidence}</span>`
-        : '<span class="empty">—</span>';
-      tr.appendChild(confTd);
+    const scrapedAt = res?.last_scraped
+      ? (() => { try { return new Date(res.last_scraped).toLocaleString(); } catch { return res.last_scraped; } })()
+      : null;
 
-      const notesTd = document.createElement('td');
-      notesTd.className = 'notes-cell';
-      notesTd.textContent = r.notes || '';
-      tr.appendChild(notesTd);
+    detail.innerHTML = `
+      <div class="detail-header">
+        <div>
+          <h2>${a.name}${a.iata ? ` <small style="color:var(--muted);font-size:.8rem">(${a.iata})</small>` : ''}</h2>
+          <div class="meta">${val(a.region, '')}</div>
+          ${a.policy_url ? `<a href="${a.policy_url}" target="_blank" rel="noopener">↗ ${a.policy_url}</a>` : ''}
+        </div>
+        ${a.last_updated ? `<span style="font-size:.75rem;color:var(--muted)">CSV updated: ${a.last_updated}</span>` : ''}
+      </div>
 
-      const dateTd = document.createElement('td');
-      dateTd.style.whiteSpace = 'nowrap';
-      dateTd.style.color = '#888';
-      dateTd.style.fontSize = '0.75rem';
-      if (r.last_scraped) {
-        try { dateTd.textContent = new Date(r.last_scraped).toLocaleString(); }
-        catch { dateTd.textContent = r.last_scraped; }
-      }
-      tr.appendChild(dateTd);
-      tbody.appendChild(tr);
-    });
-    table.appendChild(tbody);
-    wrap.appendChild(table);
+      <p style="font-size:.78rem;color:var(--muted);margin-bottom:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em">Source data (airlines.csv)</p>
 
-    // Stats bar
-    const counts = { high: 0, medium: 0, low: 0 };
-    rows.forEach(r => { if (r.confidence in counts) counts[r.confidence]++; });
-    statsEl.style.display = 'flex';
-    statsEl.innerHTML = `
-      <span class="stat-item"><span class="conf-high">high</span> ${counts.high}</span>
-      <span class="stat-item"><span class="conf-medium">medium</span> ${counts.medium}</span>
-      <span class="stat-item"><span class="conf-low">low</span> ${counts.low}</span>
+      <div class="bag-grid">
+        ${bagCard('Personal Item', a, 'pi')}
+        ${bagCard('Carry-on', a, 'co')}
+        ${bagCard('Checked Bag', a, 'cb')}
+      </div>
+
+      <hr class="divider" />
+
+      <p style="font-size:.78rem;color:var(--muted);margin-bottom:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em">Scraper output (results.csv)</p>
+
+      ${res ? scraperSection(res, scrapedAt) : noResult()}
     `;
   }
 
-  // ── Wire up file inputs and drag-and-drop ───────────────────────────────────
-  function setupPanel(fileInputId, dropZoneId, tableWrapId, badgeId, renderFn, statsId) {
-    const fileInput = document.getElementById(fileInputId);
-    const dropZone  = document.getElementById(dropZoneId);
-    const tableWrap = document.getElementById(tableWrapId);
-    const badge     = document.getElementById(badgeId);
-    const statsEl   = statsId ? document.getElementById(statsId) : null;
+  function bagCard(title, a, prefix) {
+    const dim_cm = val(a[`${prefix}_dimensions_cm`]);
+    const dim_in = val(a[`${prefix}_dimensions_in`]);
+    const kg     = val(a[`${prefix}_weight_kg`]);
+    const lbs    = val(a[`${prefix}_weight_lbs`]);
+    const fee    = val(a[`${prefix}_fee${prefix==='cb'?'_usd':''}`]);
+    const notes  = val(a[`${prefix}_notes`]);
 
-    function handleFile(file) {
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = e => {
-        tableWrap.innerHTML = '';
-        if (statsEl) statsEl.style.display = 'none';
-        dropZone.style.display = 'none';
-        const rows = parseCSV(e.target.result);
-        renderFn(rows, tableWrap, badge, statsEl);
-      };
-      reader.readAsText(file);
+    function row(label, v) {
+      const isEmpty = v === '—';
+      return `<div class="bag-row">
+        <span class="bag-label">${label}</span>
+        <span class="bag-val${isEmpty?' empty':''}">${v}</span>
+      </div>`;
     }
 
-    fileInput.addEventListener('change', () => handleFile(fileInput.files[0]));
-
-    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
-    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
-    dropZone.addEventListener('drop', e => {
-      e.preventDefault();
-      dropZone.classList.remove('drag-over');
-      handleFile(e.dataTransfer.files[0]);
-    });
+    return `<div class="bag-card">
+      <h3>${title}</h3>
+      ${row('Dimensions (cm)', dim_cm)}
+      ${row('Dimensions (in)', dim_in)}
+      ${row('Weight (kg)', kg)}
+      ${row('Weight (lbs)', lbs)}
+      ${fee !== '—' ? `<div class="fee-row">Fee: <span class="fee-val">${fee}</span></div>` : ''}
+      ${notes !== '—' ? `<div class="fee-row" style="color:var(--muted)"><em>${notes}</em></div>` : ''}
+    </div>`;
   }
 
-  setupPanel('input-file',  'input-drop',  'input-table-wrap',  'input-badge',  renderInput,  null);
-  setupPanel('output-file', 'output-drop', 'output-table-wrap', 'output-badge', renderOutput, 'output-stats');
+  function scraperSection(res, scrapedAt) {
+    function cell(label, v) {
+      const empty = !v || !v.trim();
+      return `<div class="scraper-cell">
+        <div class="sc-label">${label}</div>
+        <div class="sc-val${empty?' empty':''}">${empty ? '—' : v}</div>
+      </div>`;
+    }
+    return `<div class="scraper-section">
+      <h3>
+        Extracted result
+        <span class="conf-badge ${confClass(res.confidence)}">${res.confidence || '?'} confidence</span>
+        ${scrapedAt ? `<span style="font-size:.72rem;color:var(--muted);font-weight:400">scraped ${scrapedAt}</span>` : ''}
+      </h3>
+      <div class="scraper-grid">
+        ${cell('Personal Item (cm)', res.pi_dimensions_cm)}
+        ${cell('Carry-on (cm)', res.co_dimensions_cm)}
+        ${cell('Checked Bag (cm)', res.cb_dimensions_cm)}
+        ${cell('PI weight (kg)', res.pi_weight_kg)}
+        ${cell('CO weight (kg)', res.co_weight_kg)}
+        ${cell('CB weight (kg)', res.cb_weight_kg)}
+      </div>
+      ${res.notes ? `<div class="notes-box">⚠ ${res.notes}</div>` : ''}
+    </div>`;
+  }
+
+  function noResult() {
+    const loaded = Object.keys(resultsMap).length > 0;
+    return `<div class="no-result">
+      ${loaded
+        ? 'No scraper result found for this airline in results.csv.'
+        : 'Load <strong>results.csv</strong> above to see the scraper\'s extracted output here.'}
+    </div>`;
+  }
+
+  // ── File loading ───────────────────────────────────────────────────────────
+  function loadFile(input, onRows) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => onRows(parseCSV(e.target.result), file.name);
+    reader.readAsText(file);
+  }
+
+  document.getElementById('airlines-file').addEventListener('change', function () {
+    loadFile(this, (rows, name) => {
+      airlines = rows;
+      document.getElementById('airlines-label').textContent = `${name} (${rows.length})`;
+      document.getElementById('airlines-btn').classList.add('loaded');
+      selectedId = null;
+      document.getElementById('detail').innerHTML = `<div class="placeholder"><div class="icon">👈</div><p>Select an airline from the sidebar.</p></div>`;
+      renderSidebar();
+    });
+  });
+
+  document.getElementById('results-file').addEventListener('change', function () {
+    loadFile(this, (rows, name) => {
+      resultsMap = Object.fromEntries(rows.map(r => [r.id, r]));
+      document.getElementById('results-label').textContent = `${name} (${rows.length})`;
+      document.getElementById('results-btn').classList.add('loaded');
+      renderSidebar(document.getElementById('search-input').value);
+      if (selectedId) selectAirline(selectedId); // refresh detail
+    });
+  });
+
+  document.getElementById('search-input').addEventListener('input', function () {
+    renderSidebar(this.value);
+  });
 </script>
 </body>
 </html>
