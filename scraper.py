@@ -28,6 +28,7 @@ from typing import Optional
 from openai import OpenAI
 from dotenv import load_dotenv
 from playwright.async_api import BrowserContext, Page, async_playwright
+from playwright_stealth import stealth_async
 
 load_dotenv()
 
@@ -256,9 +257,10 @@ async def try_click_label(page: Page, label: str) -> bool:
                 await locator.first.click(timeout=5000)
                 # Wait for network to settle after click
                 try:
-                    await page.wait_for_load_state("networkidle", timeout=6000)
+                    await page.wait_for_load_state("domcontentloaded", timeout=6000)
                 except Exception:
-                    await asyncio.sleep(1.5)
+                    pass
+                await asyncio.sleep(1.5)
                 return True
         except Exception:
             continue
@@ -288,9 +290,14 @@ async def scrape_airline(
 
     try:
         logger.info(f"[{airline_name}] → {policy_url}")
-        await page.goto(policy_url, wait_until="networkidle", timeout=page_timeout)
+        await stealth_async(page)
+        try:
+            await page.goto(policy_url, wait_until="domcontentloaded", timeout=page_timeout)
+        except Exception:
+            # Some sites throw on domcontentloaded but the page still loads — try load
+            await page.goto(policy_url, wait_until="load", timeout=page_timeout)
         # Extra settle time for JS-heavy SPAs
-        await asyncio.sleep(2)
+        await asyncio.sleep(3)
 
         # --- Step 1: initial screenshot + extract + nav discovery ---
         screenshot_b64 = await take_screenshot(page)
@@ -406,14 +413,28 @@ async def run(args: argparse.Namespace) -> None:
     results: list[AirlineResult] = []
 
     async with async_playwright() as pw:
-        browser = await pw.chromium.launch(headless=True)
+        browser = await pw.chromium.launch(
+            headless=True,
+            args=[
+                "--no-sandbox",
+                "--disable-blink-features=AutomationControlled",
+                "--disable-dev-shm-usage",
+                "--disable-gpu",
+            ],
+        )
         context = await browser.new_context(
             viewport={"width": 1280, "height": 900},
             user_agent=(
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
                 "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/120.0.0.0 Safari/537.36"
+                "Chrome/124.0.0.0 Safari/537.36"
             ),
+            locale="en-US",
+            timezone_id="America/New_York",
+            extra_http_headers={
+                "Accept-Language": "en-US,en;q=0.9",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+            },
         )
 
         for idx, row in enumerate(airlines):
