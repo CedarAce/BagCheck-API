@@ -1,0 +1,2 @@
+id,name,pi_dimensions_cm,pi_weight_kg,co_dimensions_cm,co_weight_kg,cb_dimensions_cm,cb_weight_kg,confidence,notes,last_scraped
+air-canada,Air Canada,,,,,,,low,"Scrape error: Error code: 401 - {'error': {'message': 'User not found.', 'code': 401}}",2026-04-04T17:28:47.773985+00:00
