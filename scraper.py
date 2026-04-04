@@ -278,7 +278,7 @@ async def scrape_airline(
     policy_url: str,
     client: OpenAI,
     context: BrowserContext,
-    page_timeout: int = 30_000,
+    page_timeout: int = 60_000,
     max_subnav: int = 5,
 ) -> AirlineResult:
     """
@@ -414,7 +414,7 @@ async def run(args: argparse.Namespace) -> None:
 
     async with async_playwright() as pw:
         browser = await pw.chromium.launch(
-            headless=True,
+            headless=not args.headed,
             args=[
                 "--no-sandbox",
                 "--disable-blink-features=AutomationControlled",
@@ -452,6 +452,7 @@ async def run(args: argparse.Namespace) -> None:
                 policy_url=policy_url,
                 client=client,
                 context=context,
+                page_timeout=60_000,
             )
             results.append(result)
 
@@ -510,6 +511,11 @@ def main() -> None:
         default=3.0,
         metavar="SECONDS",
         help="Seconds to wait between airline requests (default: 3.0)",
+    )
+    parser.add_argument(
+        "--headed",
+        action="store_true",
+        help="Show the browser window (useful for debugging blocked pages)",
     )
 
     args = parser.parse_args()
