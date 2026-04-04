@@ -14,7 +14,7 @@ pip install -r requirements.txt
 playwright install chromium
 
 cp .env.example .env
-# add your ANTHROPIC_API_KEY to .env
+# add your OPENROUTER_API_KEY to .env
 ```
 
 ---

@@ -25,7 +25,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Optional
 
-import anthropic
+from openai import OpenAI
 from dotenv import load_dotenv
 from playwright.async_api import BrowserContext, Page, async_playwright
 
@@ -38,8 +38,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Model explicitly requested by the user
-MODEL = "claude-sonnet-4-20250514"
+# Model — override via MODEL env var, e.g. anthropic/claude-opus-4-5
+MODEL = os.getenv("MODEL", "anthropic/claude-sonnet-4-5")
 
 # ---------------------------------------------------------------------------
 # Prompts
@@ -191,10 +191,10 @@ async def take_screenshot(page: Page) -> str:
 
 
 def call_claude_vision(
-    client: anthropic.Anthropic, image_b64: str, prompt: str
+    client: OpenAI, image_b64: str, prompt: str
 ) -> dict:
-    """Send a screenshot to Claude vision and return parsed JSON dict."""
-    response = client.messages.create(
+    """Send a screenshot to the model via OpenRouter and return parsed JSON dict."""
+    response = client.chat.completions.create(
         model=MODEL,
         max_tokens=2048,
         messages=[
@@ -202,12 +202,8 @@ def call_claude_vision(
                 "role": "user",
                 "content": [
                     {
-                        "type": "image",
-                        "source": {
-                            "type": "base64",
-                            "media_type": "image/png",
-                            "data": image_b64,
-                        },
+                        "type": "image_url",
+                        "image_url": {"url": f"data:image/png;base64,{image_b64}"},
                     },
                     {"type": "text", "text": prompt},
                 ],
@@ -215,7 +211,7 @@ def call_claude_vision(
         ],
     )
 
-    text = next((b.text for b in response.content if b.type == "text"), "").strip()
+    text = (response.choices[0].message.content or "").strip()
 
     # Strip markdown code fences if the model wraps the JSON anyway
     if text.startswith("```"):
@@ -278,7 +274,7 @@ async def scrape_airline(
     airline_id: str,
     airline_name: str,
     policy_url: str,
-    client: anthropic.Anthropic,
+    client: OpenAI,
     context: BrowserContext,
     page_timeout: int = 30_000,
     max_subnav: int = 5,
@@ -375,12 +371,15 @@ def write_csv(results: list[AirlineResult], output_path: str) -> None:
 # ---------------------------------------------------------------------------
 
 async def run(args: argparse.Namespace) -> None:
-    api_key = os.getenv("ANTHROPIC_API_KEY")
+    api_key = os.getenv("OPENROUTER_API_KEY")
     if not api_key:
-        logger.error("ANTHROPIC_API_KEY is not set. Add it to your .env file.")
+        logger.error("OPENROUTER_API_KEY is not set. Add it to your .env file.")
         sys.exit(1)
 
-    client = anthropic.Anthropic(api_key=api_key)
+    client = OpenAI(
+        base_url="https://openrouter.ai/api/v1",
+        api_key=api_key,
+    )
 
     # Read input CSV
     with open(args.input, newline="", encoding="utf-8") as fh:
