@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BagCheck Viewer</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f4f6f9;
+      color: #1a1a2e;
+      padding: 24px;
+    }
+
+    h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
+    .subtitle { color: #666; font-size: 0.9rem; margin-bottom: 28px; }
+
+    .panels {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 900px) { .panels { grid-template-columns: 1fr; } }
+
+    .panel {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.1);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      border-bottom: 1px solid #eee;
+      background: #fafafa;
+    }
+    .panel-header h2 { font-size: 1rem; font-weight: 600; }
+    .badge {
+      font-size: 0.75rem;
+      background: #e8edf5;
+      color: #444;
+      padding: 2px 8px;
+      border-radius: 99px;
+    }
+
+    .drop-zone {
+      padding: 32px 18px;
+      text-align: center;
+      color: #888;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border: 2px dashed #ddd;
+      margin: 16px;
+      border-radius: 8px;
+      transition: background .15s, border-color .15s;
+    }
+    .drop-zone:hover, .drop-zone.drag-over {
+      background: #f0f4ff;
+      border-color: #4a80f0;
+      color: #4a80f0;
+    }
+    .drop-zone input[type=file] { display: none; }
+    .drop-icon { font-size: 1.8rem; margin-bottom: 6px; }
+
+    .table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+    th {
+      background: #f0f3f8;
+      text-align: left;
+      padding: 8px 12px;
+      font-weight: 600;
+      color: #555;
+      white-space: nowrap;
+      border-bottom: 2px solid #e0e6ef;
+    }
+    td {
+      padding: 7px 12px;
+      border-bottom: 1px solid #f0f0f0;
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f9fafb; }
+
+    .conf-high   { background: #d4edda; color: #1a5c2a; padding: 2px 8px; border-radius: 99px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
+    .conf-medium { background: #fff3cd; color: #6b4c00; padding: 2px 8px; border-radius: 99px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
+    .conf-low    { background: #f8d7da; color: #721c24; padding: 2px 8px; border-radius: 99px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
+
+    .dim   { color: #333; font-family: monospace; font-size: 0.8rem; }
+    .empty { color: #bbb; font-style: italic; }
+    .notes-cell { max-width: 200px; word-break: break-word; color: #555; }
+
+    .url-cell { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .url-cell a { color: #4a80f0; text-decoration: none; }
+    .url-cell a:hover { text-decoration: underline; }
+
+    .stats {
+      display: flex;
+      gap: 12px;
+      padding: 10px 18px;
+      border-top: 1px solid #eee;
+      font-size: 0.8rem;
+      color: #666;
+      flex-wrap: wrap;
+    }
+    .stat-item { display: flex; align-items: center; gap: 5px; }
+  </style>
+</head>
+<body>
+
+<h1>✈ BagCheck Viewer</h1>
+<p class="subtitle">Drop your CSVs below to inspect the scraper's input and output side by side.</p>
+
+<div class="panels">
+
+  <!-- INPUT PANEL -->
+  <div class="panel" id="input-panel">
+    <div class="panel-header">
+      <h2>Input — airlines.csv</h2>
+      <span class="badge" id="input-badge">no file</span>
+    </div>
+    <div class="drop-zone" id="input-drop" onclick="document.getElementById('input-file').click()">
+      <input type="file" id="input-file" accept=".csv" />
+      <div class="drop-icon">📂</div>
+      Click or drop <strong>airlines.csv</strong> here
+    </div>
+    <div class="table-wrap" id="input-table-wrap"></div>
+  </div>
+
+  <!-- OUTPUT PANEL -->
+  <div class="panel" id="output-panel">
+    <div class="panel-header">
+      <h2>Output — results.csv</h2>
+      <span class="badge" id="output-badge">no file</span>
+    </div>
+    <div class="drop-zone" id="output-drop" onclick="document.getElementById('output-file').click()">
+      <input type="file" id="output-file" accept=".csv" />
+      <div class="drop-icon">📊</div>
+      Click or drop <strong>results.csv</strong> here
+    </div>
+    <div class="table-wrap" id="output-table-wrap"></div>
+    <div id="output-stats" class="stats" style="display:none"></div>
+  </div>
+
+</div>
+
+<script>
+  // ── CSV parser (handles quoted fields) ─────────────────────────────────────
+  function parseCSV(text) {
+    const rows = [];
+    const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+    for (const line of lines) {
+      if (!line.trim()) continue;
+      const row = [];
+      let cur = '', inQ = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '"') {
+          if (inQ && line[i+1] === '"') { cur += '"'; i++; }
+          else inQ = !inQ;
+        } else if (ch === ',' && !inQ) {
+          row.push(cur); cur = '';
+        } else {
+          cur += ch;
+        }
+      }
+      row.push(cur);
+      rows.push(row);
+    }
+    if (rows.length < 2) return [];
+    const headers = rows[0];
+    return rows.slice(1).map(r => Object.fromEntries(headers.map((h, i) => [h.trim(), (r[i] ?? '').trim()])));
+  }
+
+  // ── Cell helpers ────────────────────────────────────────────────────────────
+  function cell(text, cls) {
+    const td = document.createElement('td');
+    if (!text || text === '') {
+      td.innerHTML = '<span class="empty">—</span>';
+    } else if (cls) {
+      const span = document.createElement('span');
+      span.className = cls;
+      span.textContent = text;
+      td.appendChild(span);
+    } else {
+      td.textContent = text;
+    }
+    return td;
+  }
+
+  function dimCell(text) {
+    const td = document.createElement('td');
+    td.innerHTML = text ? `<span class="dim">${text}</span>` : '<span class="empty">—</span>';
+    return td;
+  }
+
+  function confBadge(val) {
+    const map = { high: 'conf-high', medium: 'conf-medium', low: 'conf-low' };
+    return map[val] || 'conf-low';
+  }
+
+  // ── Render input table ──────────────────────────────────────────────────────
+  function renderInput(rows, wrap, badge) {
+    badge.textContent = `${rows.length} airline${rows.length !== 1 ? 's' : ''}`;
+    const table = document.createElement('table');
+    table.innerHTML = `<thead><tr><th>#</th><th>ID</th><th>Name</th><th>Policy URL</th></tr></thead>`;
+    const tbody = document.createElement('tbody');
+    rows.forEach((r, i) => {
+      const tr = document.createElement('tr');
+      tr.appendChild(cell(String(i + 1)));
+      tr.appendChild(cell(r.id));
+      tr.appendChild(cell(r.name));
+      const td = document.createElement('td');
+      td.className = 'url-cell';
+      if (r.policy_url) {
+        td.innerHTML = `<a href="${r.policy_url}" target="_blank" rel="noopener">${r.policy_url}</a>`;
+      } else {
+        td.innerHTML = '<span class="empty">—</span>';
+      }
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    wrap.appendChild(table);
+  }
+
+  // ── Render output table ─────────────────────────────────────────────────────
+  function renderOutput(rows, wrap, badge, statsEl) {
+    badge.textContent = `${rows.length} result${rows.length !== 1 ? 's' : ''}`;
+
+    const table = document.createElement('table');
+    table.innerHTML = `<thead><tr>
+      <th>Name</th>
+      <th>Personal Item</th><th>PI kg</th>
+      <th>Carry-on</th><th>CO kg</th>
+      <th>Checked</th><th>CB kg</th>
+      <th>Conf.</th><th>Notes</th><th>Scraped</th>
+    </tr></thead>`;
+
+    const tbody = document.createElement('tbody');
+    rows.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.appendChild(cell(r.name));
+      tr.appendChild(dimCell(r.pi_dimensions_cm));
+      tr.appendChild(cell(r.pi_weight_kg));
+      tr.appendChild(dimCell(r.co_dimensions_cm));
+      tr.appendChild(cell(r.co_weight_kg));
+      tr.appendChild(dimCell(r.cb_dimensions_cm));
+      tr.appendChild(cell(r.cb_weight_kg));
+
+      const confTd = document.createElement('td');
+      confTd.innerHTML = r.confidence
+        ? `<span class="${confBadge(r.confidence)}">${r.confidence}</span>`
+        : '<span class="empty">—</span>';
+      tr.appendChild(confTd);
+
+      const notesTd = document.createElement('td');
+      notesTd.className = 'notes-cell';
+      notesTd.textContent = r.notes || '';
+      tr.appendChild(notesTd);
+
+      const dateTd = document.createElement('td');
+      dateTd.style.whiteSpace = 'nowrap';
+      dateTd.style.color = '#888';
+      dateTd.style.fontSize = '0.75rem';
+      if (r.last_scraped) {
+        try { dateTd.textContent = new Date(r.last_scraped).toLocaleString(); }
+        catch { dateTd.textContent = r.last_scraped; }
+      }
+      tr.appendChild(dateTd);
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    wrap.appendChild(table);
+
+    // Stats bar
+    const counts = { high: 0, medium: 0, low: 0 };
+    rows.forEach(r => { if (r.confidence in counts) counts[r.confidence]++; });
+    statsEl.style.display = 'flex';
+    statsEl.innerHTML = `
+      <span class="stat-item"><span class="conf-high">high</span> ${counts.high}</span>
+      <span class="stat-item"><span class="conf-medium">medium</span> ${counts.medium}</span>
+      <span class="stat-item"><span class="conf-low">low</span> ${counts.low}</span>
+    `;
+  }
+
+  // ── Wire up file inputs and drag-and-drop ───────────────────────────────────
+  function setupPanel(fileInputId, dropZoneId, tableWrapId, badgeId, renderFn, statsId) {
+    const fileInput = document.getElementById(fileInputId);
+    const dropZone  = document.getElementById(dropZoneId);
+    const tableWrap = document.getElementById(tableWrapId);
+    const badge     = document.getElementById(badgeId);
+    const statsEl   = statsId ? document.getElementById(statsId) : null;
+
+    function handleFile(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        tableWrap.innerHTML = '';
+        if (statsEl) statsEl.style.display = 'none';
+        dropZone.style.display = 'none';
+        const rows = parseCSV(e.target.result);
+        renderFn(rows, tableWrap, badge, statsEl);
+      };
+      reader.readAsText(file);
+    }
+
+    fileInput.addEventListener('change', () => handleFile(fileInput.files[0]));
+
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('drag-over');
+      handleFile(e.dataTransfer.files[0]);
+    });
+  }
+
+  setupPanel('input-file',  'input-drop',  'input-table-wrap',  'input-badge',  renderInput,  null);
+  setupPanel('output-file', 'output-drop', 'output-table-wrap', 'output-badge', renderOutput, 'output-stats');
+</script>
+</body>
+</html>
