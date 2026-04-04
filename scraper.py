@@ -28,7 +28,7 @@ from typing import Optional
 from openai import OpenAI
 from dotenv import load_dotenv
 from playwright.async_api import BrowserContext, Page, async_playwright
-from playwright_stealth import stealth_async
+from playwright_stealth import Stealth
 
 load_dotenv()
 
@@ -290,7 +290,7 @@ async def scrape_airline(
 
     try:
         logger.info(f"[{airline_name}] → {policy_url}")
-        await stealth_async(page)
+        await Stealth().apply_stealth_async(page)
         try:
             await page.goto(policy_url, wait_until="domcontentloaded", timeout=page_timeout)
         except Exception:
