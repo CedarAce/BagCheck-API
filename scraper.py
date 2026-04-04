@@ -5,13 +5,12 @@ Baggage Policy Scraper Pipeline
 Reads a CSV of airlines (columns: id, name, policy_url), visits each baggage
 policy page with a real Chromium browser, uses Claude vision to extract
 carry-on, personal item, and checked-bag dimensions / weight limits, and
-writes results to a CSV. Optionally upserts to a Supabase 'airlines' table.
+writes results to a CSV.
 
 Usage:
   python scraper.py --input airlines.csv --output results.csv
   python scraper.py --dry-run
   python scraper.py --airline delta
-  python scraper.py --supabase
 """
 
 import argparse
@@ -371,29 +370,6 @@ def write_csv(results: list[AirlineResult], output_path: str) -> None:
     logger.info(f"Results written → {output_path}")
 
 
-def upsert_supabase(results: list[AirlineResult]) -> None:
-    supabase_url = os.getenv("SUPABASE_URL")
-    supabase_key = os.getenv("SUPABASE_KEY")
-
-    if not supabase_url or not supabase_key:
-        logger.warning("SUPABASE_URL / SUPABASE_KEY not set – skipping Supabase upsert")
-        return
-
-    try:
-        from supabase import create_client  # type: ignore[import]
-    except ImportError:
-        logger.warning("supabase-py not installed (pip install supabase) – skipping upsert")
-        return
-
-    sb = create_client(supabase_url, supabase_key)
-    rows = [
-        {field: getattr(r, field, None) for field in OUTPUT_FIELDS}
-        for r in results
-    ]
-    sb.table("airlines").upsert(rows, on_conflict="id").execute()
-    logger.info(f"Supabase upsert complete – {len(rows)} row(s)")
-
-
 # ---------------------------------------------------------------------------
 # Main entry point
 # ---------------------------------------------------------------------------
@@ -469,9 +445,6 @@ async def run(args: argparse.Namespace) -> None:
 
     write_csv(results, args.output)
 
-    if args.supabase:
-        upsert_supabase(results)
-
     # Summary
     n_ok = sum(1 for r in results if r.status == "ok")
     n_fail = sum(1 for r in results if r.status == "failed")
@@ -510,11 +483,6 @@ def main() -> None:
         metavar="ID",
         default=None,
         help="Re-process a single airline by its id column value",
-    )
-    parser.add_argument(
-        "--supabase",
-        action="store_true",
-        help="Upsert results into the Supabase 'airlines' table (requires SUPABASE_URL/KEY)",
     )
     parser.add_argument(
         "--delay",
