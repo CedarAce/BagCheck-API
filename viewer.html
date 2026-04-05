@@ -374,9 +374,15 @@
           <div class="meta">${a.region||''}</div>
           ${a.policy_url ? `<a href="${a.policy_url}" target="_blank" rel="noopener">↗ ${a.policy_url}</a>` : ''}
         </div>
-        <button class="run-btn" id="run-btn" onclick="runScraper('${id}')">
-          ▶ Run Scraper
-        </button>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <button class="run-btn" id="run-btn" onclick="runScraper('${id}')">
+            ▶ Run Scraper
+          </button>
+          <label style="display:flex;align-items:center;gap:5px;font-size:.8rem;color:var(--muted);cursor:pointer;user-select:none">
+            <input type="checkbox" id="headed-toggle" style="cursor:pointer" />
+            👁 Show browser
+          </label>
+        </div>
       </div>
 
       <p style="font-size:.78rem;color:var(--muted);margin-bottom:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em">Source data (airlines.csv)</p>
@@ -409,7 +415,8 @@
     area.innerHTML = `<div class="no-result">Scraping — please wait…</div><div class="log-box" id="log-box"></div>`;
     const logBox = document.getElementById('log-box');
 
-    const es = new EventSource(`/run/${encodeURIComponent(id)}`);
+    const headed = document.getElementById('headed-toggle')?.checked;
+    const es = new EventSource(`/run/${encodeURIComponent(id)}${headed ? '?headed=1' : ''}`);
 
     es.onmessage = async (e) => {
       const line = e.data;

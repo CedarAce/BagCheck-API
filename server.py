@@ -61,11 +61,17 @@ def run_scraper(airline_id: str):
     Runs scraper.py --airline <id> in a background thread and streams its
     stdout/stderr back as Server-Sent Events.
 
+    Query params:
+      ?headed=1   — open a visible browser window
+
     The client receives:
       data: <log line>           — progress messages
       data: __DONE__             — scrape finished successfully
       data: __ERROR__ <message>  — scrape failed
     """
+    from flask import request as flask_request
+    headed = flask_request.args.get("headed") == "1"
+
     # Validate the airline id exists in airlines.csv
     airlines_path = BASE / "airlines.csv"
     if not airlines_path.exists():
@@ -82,6 +88,8 @@ def run_scraper(airline_id: str):
     def worker():
         import subprocess, sys
         cmd = [sys.executable, str(BASE / "scraper.py"), "--airline", airline_id]
+        if headed:
+            cmd.append("--headed")
         try:
             proc = subprocess.Popen(
                 cmd,
