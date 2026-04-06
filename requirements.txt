@@ -1,5 +1,6 @@
 openai>=1.30.0
 playwright>=1.48.0
 playwright-stealth>=1.0.6
+Pillow>=10.0.0
 python-dotenv>=1.0.0
 flask>=3.0.0

@@ -185,9 +185,29 @@ def merge_extraction(result: AirlineResult, extraction: dict) -> None:
         result.notes = f"{result.notes}; {new_notes}".lstrip("; ")
 
 
-async def take_screenshot(page: Page) -> str:
-    """Full-page screenshot → base64 PNG string."""
+async def take_screenshot(page: Page, max_px: int = 7000) -> str:
+    """Full-page screenshot → base64 PNG string, scaled down if either dimension exceeds max_px."""
     data = await page.screenshot(full_page=True)
+
+    # Check dimensions and scale down if needed to stay within Claude's 8000px limit
+    try:
+        import io
+        from PIL import Image
+        img = Image.open(io.BytesIO(data))
+        w, h = img.size
+        if w > max_px or h > max_px:
+            scale = max_px / max(w, h)
+            new_w, new_h = int(w * scale), int(h * scale)
+            img = img.resize((new_w, new_h), Image.LANCZOS)
+            buf = io.BytesIO()
+            img.save(buf, format="PNG", optimize=True)
+            data = buf.getvalue()
+            logger.debug(f"Screenshot resized {w}x{h} → {new_w}x{new_h}")
+    except ImportError:
+        # Pillow not installed — fall back to viewport-only screenshot
+        logger.warning("Pillow not installed; falling back to viewport screenshot to avoid size limit")
+        data = await page.screenshot(full_page=False)
+
     return base64.standard_b64encode(data).decode("utf-8")
 
 
